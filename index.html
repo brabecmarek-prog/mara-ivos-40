@@ -2253,10 +2253,10 @@
     .hero-photo:nth-child(1) {
       display: block;
       left: auto;
-      right: clamp(110px, 11vw, 210px);
-      top: 4%;
+      right: clamp(42px, 5vw, 110px);
+      top: 6%;
       bottom: auto;
-      width: min(18vw, 270px);
+      width: min(17vw, 255px);
       aspect-ratio: 4 / 3;
       transform: rotate(5deg);
     }
@@ -2268,8 +2268,8 @@
     .hero-photo:nth-child(2) {
       display: block;
       left: auto;
-      right: clamp(360px, 34vw, 650px);
-      top: 14%;
+      right: clamp(360px, 32vw, 610px);
+      top: 11%;
       bottom: auto;
       width: min(15.5vw, 235px);
       aspect-ratio: 1;
@@ -2283,8 +2283,8 @@
     .hero-photo:nth-child(3) {
       display: block;
       left: auto;
-      right: clamp(210px, 20vw, 380px);
-      top: 35%;
+      right: clamp(185px, 17vw, 330px);
+      top: 33%;
       bottom: auto;
       width: min(15.5vw, 235px);
       aspect-ratio: 3 / 4;
@@ -2298,10 +2298,10 @@
     .hero-photo:nth-child(4) {
       display: block;
       left: auto;
-      right: clamp(470px, 42vw, 760px);
-      top: 40%;
+      right: clamp(385px, 34vw, 650px);
+      top: 61%;
       bottom: auto;
-      width: min(14vw, 210px);
+      width: min(14.5vw, 220px);
       aspect-ratio: 4 / 3;
       transform: rotate(8deg);
     }
@@ -2313,8 +2313,8 @@
     .hero-photo:nth-child(5) {
       display: block;
       left: auto;
-      right: clamp(130px, 13vw, 260px);
-      top: 61%;
+      right: clamp(52px, 6vw, 130px);
+      top: 58%;
       bottom: auto;
       width: min(15vw, 225px);
       aspect-ratio: 4 / 3;
@@ -2331,12 +2331,17 @@
 
     @media (max-width: 1100px) {
       .hero-photo:nth-child(1) {
-        right: 26px;
-        width: 235px;
+        right: -20px;
+        width: 220px;
+      }
+
+      .hero-photo:nth-child(2),
+      .hero-photo:nth-child(4) {
+        display: none;
       }
 
       .hero-photo:nth-child(3) {
-        right: 140px;
+        right: 120px;
         top: 43%;
         width: 205px;
       }
