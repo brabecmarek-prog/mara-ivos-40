@@ -2519,6 +2519,101 @@
       }
     }
   </style>
+  <style>
+    .hero-photo-collage {
+      position: absolute;
+      left: min(52vw, 900px);
+      right: clamp(26px, 4vw, 72px);
+      top: 18%;
+      width: auto;
+      height: clamp(170px, 20vw, 280px);
+      overflow: hidden;
+      z-index: 1;
+      contain: paint;
+      border: 0;
+      pointer-events: none;
+    }
+
+    .hero-photo-track {
+      display: flex;
+      gap: 14px;
+      height: 100%;
+      transition: transform 650ms cubic-bezier(0.22, 1, 0.36, 1);
+      will-change: transform;
+    }
+
+    .hero-photo {
+      position: relative !important;
+      inset: auto !important;
+      display: block !important;
+      flex: 0 0 calc((100% - 28px) / 3);
+      width: auto !important;
+      height: 100%;
+      aspect-ratio: auto;
+      border: 7px solid var(--cream);
+      outline: 3px solid var(--line);
+      background: var(--cream);
+      box-shadow: 10px 10px 0 rgba(32, 33, 42, 0.13);
+      opacity: 1;
+      transform: none !important;
+    }
+
+    .hero-photo img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: none !important;
+    }
+
+    .hero-photo:nth-child(n) {
+      transform: none !important;
+    }
+
+    .hero-photo:nth-child(n+6) {
+      display: block;
+    }
+
+    @media (max-width: 1100px) {
+      .hero-photo-collage {
+        left: auto;
+        right: 22px;
+        top: 22px;
+        width: min(42vw, 360px);
+        height: 150px;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .hero-photo-collage {
+        position: relative;
+        left: auto;
+        right: auto;
+        top: auto;
+        width: 100%;
+        height: 132px;
+        margin-top: 18px;
+        overflow: hidden;
+      }
+
+      .hero-photo-track {
+        gap: 10px;
+      }
+
+      .hero-photo {
+        flex-basis: calc((100% - 20px) / 3);
+        border-width: 4px;
+        outline-width: 2px;
+        box-shadow: 5px 5px 0 rgba(32, 33, 42, 0.12);
+      }
+    }
+
+    @media (max-width: 420px) {
+      .hero-photo-collage {
+        height: 118px;
+      }
+    }
+  </style>
 </head>
 <body>
   <div class="page">
@@ -2624,17 +2719,19 @@
       }
 
       var sourcePhotos = shuffle(heroPhotos.length > 0 ? heroPhotos : photos).map(normalizePhoto);
-      var currentIndex = 0;
-
-      function nextPhoto() {
-        var photo = sourcePhotos[currentIndex % sourcePhotos.length];
-        currentIndex += 1;
-        return photo;
-      }
 
       if (heroCollage && sourcePhotos.length > 0) {
-        [0, 1, 2, 3, 4].forEach(function () {
-          var photo = nextPhoto();
+        var track = document.createElement("div");
+        var visibleCount = 3;
+        var page = 0;
+        var pageCount = Math.max(1, Math.ceil(sourcePhotos.length / visibleCount));
+        var carouselPhotos = sourcePhotos.concat(sourcePhotos.slice(0, visibleCount));
+
+        track.className = "hero-photo-track";
+        heroCollage.innerHTML = "";
+        heroCollage.appendChild(track);
+
+        carouselPhotos.forEach(function (photo) {
           var frame = document.createElement("div");
           var image = document.createElement("img");
 
@@ -2644,22 +2741,42 @@
           image.loading = "lazy";
 
           frame.appendChild(image);
-          heroCollage.appendChild(frame);
+          track.appendChild(frame);
         });
 
-        if (sourcePhotos.length > 1) {
-          window.setInterval(function () {
-            var frames = heroCollage.querySelectorAll(".hero-photo");
-            var frame = frames[Math.floor(Math.random() * frames.length)];
-            var image = frame.querySelector("img");
-            var photo = nextPhoto();
+        function moveToPage(nextPage, animate) {
+          var firstFrame = track.querySelector(".hero-photo");
+          var gap = 14;
+          var shift = 0;
 
-            frame.classList.add("is-changing");
-            window.setTimeout(function () {
-              image.src = photo.src;
-              frame.classList.remove("is-changing");
-            }, 260);
+          if (!firstFrame) {
+            return;
+          }
+
+          gap = parseFloat(window.getComputedStyle(track).columnGap || window.getComputedStyle(track).gap) || gap;
+          shift = nextPage * visibleCount * (firstFrame.getBoundingClientRect().width + gap);
+          track.style.transition = animate ? "" : "none";
+          track.style.transform = "translateX(-" + shift + "px)";
+          page = nextPage;
+        }
+
+        if (sourcePhotos.length > visibleCount) {
+          window.setInterval(function () {
+            moveToPage(page + 1, true);
+
+            if (page >= pageCount) {
+              window.setTimeout(function () {
+                moveToPage(0, false);
+                window.requestAnimationFrame(function () {
+                  track.style.transition = "";
+                });
+              }, 700);
+            }
           }, 3000);
+
+          window.addEventListener("resize", function () {
+            moveToPage(page, false);
+          });
         }
       }
     }());
