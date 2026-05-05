@@ -2325,22 +2325,7 @@
       transform: rotate(-5deg) translateY(4px);
     }
 
-    .hero-photo:nth-child(6) {
-      display: block;
-      left: auto;
-      right: clamp(370px, 35vw, 650px);
-      top: 55%;
-      bottom: auto;
-      width: min(14vw, 210px);
-      aspect-ratio: 1;
-      transform: rotate(4deg);
-    }
-
-    .hero-photo:nth-child(6).is-changing {
-      transform: rotate(4deg) translateY(4px);
-    }
-
-    .hero-photo:nth-child(n+7) {
+    .hero-photo:nth-child(n+6) {
       display: none;
     }
 
@@ -2401,9 +2386,6 @@
       transform: rotate(-5deg);
     }
 
-    .hero-photo:nth-child(6).is-changing {
-      transform: rotate(4deg);
-    }
 
     @media (max-width: 760px) {
       .hero {
@@ -2635,7 +2617,7 @@
       }
 
       if (heroCollage && sourcePhotos.length > 0) {
-        [0, 1, 2, 3, 4, 5].forEach(function () {
+        [0, 1, 2, 3, 4].forEach(function () {
           var photo = nextPhoto();
           var frame = document.createElement("div");
           var image = document.createElement("img");
