@@ -2253,7 +2253,7 @@
     .hero-photo:nth-child(1) {
       display: block;
       left: auto;
-      right: clamp(42px, 5vw, 110px);
+      right: 8%;
       top: 6%;
       bottom: auto;
       width: min(17vw, 255px);
@@ -2268,7 +2268,7 @@
     .hero-photo:nth-child(2) {
       display: block;
       left: auto;
-      right: clamp(500px, 46vw, 860px);
+      right: 58%;
       top: 7%;
       bottom: auto;
       width: min(14vw, 210px);
@@ -2283,7 +2283,7 @@
     .hero-photo:nth-child(3) {
       display: block;
       left: auto;
-      right: clamp(205px, 19vw, 360px);
+      right: 32%;
       top: 36%;
       bottom: auto;
       width: min(15.5vw, 235px);
@@ -2298,7 +2298,7 @@
     .hero-photo:nth-child(4) {
       display: block;
       left: auto;
-      right: clamp(450px, 40vw, 750px);
+      right: 58%;
       top: 63%;
       bottom: auto;
       width: min(14.5vw, 220px);
@@ -2313,7 +2313,7 @@
     .hero-photo:nth-child(5) {
       display: block;
       left: auto;
-      right: clamp(18px, 3vw, 70px);
+      right: 7%;
       top: 64%;
       bottom: auto;
       width: min(15vw, 225px);
@@ -2365,6 +2365,10 @@
     .hero-photo-collage {
       z-index: 1;
       contain: paint;
+      left: min(56vw, 980px);
+      right: 0;
+      width: auto;
+      overflow: visible;
     }
 
     .hero-photo.is-changing img {
@@ -2393,6 +2397,13 @@
 
 
     @media (max-width: 760px) {
+      .hero-photo-collage {
+        left: auto;
+        right: auto;
+        width: auto;
+        overflow: visible;
+      }
+
       .hero {
         min-height: auto;
         padding: 18px 16px 38px;
