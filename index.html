@@ -2831,7 +2831,7 @@
               </label>
               <button class="button" type="submit">Přidat dotaz</button>
             </form>
-            <p class="question-note">Poznámka: dotazy se zatím ukládají jen v tomto prohlížeči.</p>
+            <p class="question-note" id="question-note">Dotazy se načítají...</p>
             <div class="question-list" id="question-list" aria-live="polite"></div>
           </section>
 
@@ -2841,6 +2841,7 @@
     </main>
   </div>
   <script src="photos/photos.js"></script>
+  <script src="questions/config.js"></script>
   <script>
     (function () {
       var heroCollage = document.getElementById("hero-photo-collage");
@@ -2848,7 +2849,9 @@
       var questionList = document.getElementById("question-list");
       var questionName = document.getElementById("question-name");
       var questionText = document.getElementById("question-text");
+      var questionNote = document.getElementById("question-note");
       var questionStorageKey = "mara-ivos-questions";
+      var questionEndpoint = window.partyQuestionsEndpoint || "";
       var config = window.partyPhotoGallery || {};
       var photos = Array.isArray(config.photos) ? config.photos.slice() : [];
       var heroPhotos = Array.isArray(config.heroPhotos) ? config.heroPhotos.slice() : [];
@@ -2911,7 +2914,13 @@
         }
       }
 
-      function loadQuestions() {
+      function setQuestionNote(text) {
+        if (questionNote) {
+          questionNote.textContent = text;
+        }
+      }
+
+      function localLoadQuestions() {
         try {
           return JSON.parse(window.localStorage.getItem(questionStorageKey) || "[]");
         } catch (error) {
@@ -2919,18 +2928,20 @@
         }
       }
 
-      function saveQuestions(questions) {
+      function localSaveQuestions(questions) {
         window.localStorage.setItem(questionStorageKey, JSON.stringify(questions));
       }
 
-      function renderQuestions() {
-        var questions = loadQuestions();
-
+      function renderQuestions(questions) {
         if (!questionList) {
           return;
         }
 
         questionList.innerHTML = "";
+        if (questions.length === 0) {
+          return;
+        }
+
         questions.forEach(function (question) {
           var item = document.createElement("article");
           var name = document.createElement("strong");
@@ -2946,19 +2957,72 @@
         });
       }
 
+      function jsonp(action, payload) {
+        return new Promise(function (resolve, reject) {
+          var callbackName = "partyQuestionsCallback" + Date.now() + Math.floor(Math.random() * 1000);
+          var script = document.createElement("script");
+          var params = new URLSearchParams(payload || {});
+
+          params.set("action", action);
+          params.set("callback", callbackName);
+          window[callbackName] = function (response) {
+            delete window[callbackName];
+            script.remove();
+            resolve(response);
+          };
+
+          script.onerror = function () {
+            delete window[callbackName];
+            script.remove();
+            reject(new Error("Nepodařilo se spojit se službou dotazů."));
+          };
+
+          script.src = questionEndpoint + "?" + params.toString();
+          document.body.appendChild(script);
+        });
+      }
+
+      function refreshQuestions() {
+        if (!questionEndpoint) {
+          setQuestionNote("Poznámka: dotazy se zatím ukládají jen v tomto prohlížeči.");
+          renderQuestions(localLoadQuestions());
+          return Promise.resolve();
+        }
+
+        setQuestionNote("Dotazy jsou sdílené pro všechny hosty.");
+        return jsonp("list").then(function (response) {
+          renderQuestions(response.questions || []);
+        }).catch(function () {
+          setQuestionNote("Dotazy se nepodařilo načíst. Zkuste stránku obnovit.");
+        });
+      }
+
       if (questionForm && questionName && questionText) {
-        renderQuestions();
+        refreshQuestions();
         questionForm.addEventListener("submit", function (event) {
-          var questions = loadQuestions();
+          var name = questionName.value.trim();
+          var text = questionText.value.trim();
 
           event.preventDefault();
-          questions.push({
-            name: questionName.value.trim(),
-            text: questionText.value.trim()
+          if (!name || !text) {
+            return;
+          }
+
+          if (!questionEndpoint) {
+            var questions = localLoadQuestions();
+            questions.push({ name: name, text: text });
+            localSaveQuestions(questions);
+            questionForm.reset();
+            renderQuestions(questions);
+            return;
+          }
+
+          jsonp("add", { name: name, text: text }).then(function () {
+            questionForm.reset();
+            refreshQuestions();
+          }).catch(function () {
+            setQuestionNote("Dotaz se nepodařilo uložit. Zkuste to prosím znovu.");
           });
-          saveQuestions(questions);
-          questionForm.reset();
-          renderQuestions();
         });
       }
     }());
