@@ -2685,6 +2685,76 @@
       }
     }
   </style>
+  <style>
+    .questions {
+      margin-top: 28px;
+    }
+
+    .question-form {
+      display: grid;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .question-form label {
+      display: grid;
+      gap: 6px;
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    .question-form input,
+    .question-form textarea {
+      width: 100%;
+      border: 3px solid var(--line);
+      border-radius: 0;
+      padding: 12px 14px;
+      color: var(--ink);
+      background: #fffdf6;
+      font: inherit;
+      font-weight: 650;
+      outline: none;
+    }
+
+    .question-form textarea {
+      min-height: 108px;
+      resize: vertical;
+    }
+
+    .question-form input:focus,
+    .question-form textarea:focus {
+      box-shadow: 0 0 0 4px rgba(233, 188, 72, 0.35);
+    }
+
+    .question-form .button {
+      justify-self: start;
+      cursor: pointer;
+    }
+
+    .question-note {
+      margin-top: 10px;
+      font-size: 0.92rem;
+    }
+
+    .question-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .question-item {
+      padding: 14px;
+      border: 3px solid var(--line);
+      background: #fffdf6;
+      box-shadow: 5px 5px 0 rgba(32, 33, 42, 0.12);
+    }
+
+    .question-item strong {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--line);
+    }
+  </style>
 </head>
 <body>
   <div class="page">
@@ -2747,19 +2817,38 @@
             </ul>
           </section>
 
+          <section class="panel questions">
+            <h2>Dotazy</h2>
+            <p>Máte otázku k oslavě? Napište ji sem.</p>
+            <form class="question-form" id="question-form">
+              <label>
+                Jméno
+                <input id="question-name" name="name" autocomplete="name" required>
+              </label>
+              <label>
+                Dotaz
+                <textarea id="question-text" name="question" required></textarea>
+              </label>
+              <button class="button" type="submit">Přidat dotaz</button>
+            </form>
+            <p class="question-note">Poznámka: dotazy se zatím ukládají jen v tomto prohlížeči.</p>
+            <div class="question-list" id="question-list" aria-live="polite"></div>
+          </section>
+
         </div>
 
       </div>
-
-      <footer>
-        Mara &amp; Ivo 40 let · 27. června od 15:00 · ČVK Brno
-      </footer>
     </main>
   </div>
   <script src="photos/photos.js"></script>
   <script>
     (function () {
       var heroCollage = document.getElementById("hero-photo-collage");
+      var questionForm = document.getElementById("question-form");
+      var questionList = document.getElementById("question-list");
+      var questionName = document.getElementById("question-name");
+      var questionText = document.getElementById("question-text");
+      var questionStorageKey = "mara-ivos-questions";
       var config = window.partyPhotoGallery || {};
       var photos = Array.isArray(config.photos) ? config.photos.slice() : [];
       var heroPhotos = Array.isArray(config.heroPhotos) ? config.heroPhotos.slice() : [];
@@ -2820,6 +2909,57 @@
             }, 260);
           }, 3000);
         }
+      }
+
+      function loadQuestions() {
+        try {
+          return JSON.parse(window.localStorage.getItem(questionStorageKey) || "[]");
+        } catch (error) {
+          return [];
+        }
+      }
+
+      function saveQuestions(questions) {
+        window.localStorage.setItem(questionStorageKey, JSON.stringify(questions));
+      }
+
+      function renderQuestions() {
+        var questions = loadQuestions();
+
+        if (!questionList) {
+          return;
+        }
+
+        questionList.innerHTML = "";
+        questions.forEach(function (question) {
+          var item = document.createElement("article");
+          var name = document.createElement("strong");
+          var text = document.createElement("p");
+
+          item.className = "question-item";
+          name.textContent = question.name;
+          text.textContent = question.text;
+
+          item.appendChild(name);
+          item.appendChild(text);
+          questionList.appendChild(item);
+        });
+      }
+
+      if (questionForm && questionName && questionText) {
+        renderQuestions();
+        questionForm.addEventListener("submit", function (event) {
+          var questions = loadQuestions();
+
+          event.preventDefault();
+          questions.push({
+            name: questionName.value.trim(),
+            text: questionText.value.trim()
+          });
+          saveQuestions(questions);
+          questionForm.reset();
+          renderQuestions();
+        });
       }
     }());
   </script>
