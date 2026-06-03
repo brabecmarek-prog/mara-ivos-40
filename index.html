@@ -2567,7 +2567,8 @@
       display: block;
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: contain;
+      background: var(--cream);
       transform: none !important;
     }
 
@@ -2909,13 +2910,31 @@
         track.appendChild(frame);
 
         if (sourcePhotos.length > 1) {
+          function showNextPhoto() {
+            var nextIndex = (currentIndex + 1) % sourcePhotos.length;
+            var nextPhoto = sourcePhotos[nextIndex];
+            var preload = new Image();
+
+            preload.onload = function () {
+              frame.classList.add("is-changing");
+              window.setTimeout(function () {
+                image.src = nextPhoto.src;
+                currentIndex = nextIndex;
+                window.requestAnimationFrame(function () {
+                  frame.classList.remove("is-changing");
+                });
+              }, 90);
+            };
+
+            preload.onerror = function () {
+              currentIndex = nextIndex;
+            };
+
+            preload.src = nextPhoto.src;
+          }
+
           window.setInterval(function () {
-            currentIndex = (currentIndex + 1) % sourcePhotos.length;
-            frame.classList.add("is-changing");
-            window.setTimeout(function () {
-              image.src = sourcePhotos[currentIndex].src;
-              frame.classList.remove("is-changing");
-            }, 260);
+            showNextPhoto();
           }, 3000);
         }
       }
