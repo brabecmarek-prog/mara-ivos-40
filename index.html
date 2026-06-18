@@ -2861,6 +2861,90 @@
       font-family: "Anton", Impact, sans-serif;
       font-weight: 400;
     }
+
+    .parking-link {
+      color: var(--line);
+      font-weight: 900;
+      text-decoration-thickness: 2px;
+      text-underline-offset: 3px;
+    }
+
+    .parking-link:hover,
+    .parking-link:focus-visible {
+      color: var(--red);
+    }
+
+    .parking-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+      background: rgba(20, 20, 28, 0.82);
+    }
+
+    .parking-modal[hidden] {
+      display: none;
+    }
+
+    .parking-modal__window {
+      position: relative;
+      max-width: min(1100px, 94vw);
+      max-height: 92vh;
+      padding: 10px;
+      border: 3px solid var(--line);
+      background: var(--cream);
+      box-shadow: 12px 12px 0 rgba(0, 0, 0, 0.3);
+    }
+
+    .parking-modal__image {
+      display: block;
+      max-width: 100%;
+      max-height: calc(92vh - 20px);
+      object-fit: contain;
+    }
+
+    .parking-modal__close {
+      position: absolute;
+      top: -17px;
+      right: -17px;
+      display: grid;
+      width: 42px;
+      height: 42px;
+      place-items: center;
+      border: 3px solid var(--line);
+      border-radius: 50%;
+      background: var(--yellow);
+      color: var(--line);
+      font-size: 1.65rem;
+      font-weight: 900;
+      line-height: 1;
+      cursor: pointer;
+      box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.25);
+    }
+
+    body.modal-open {
+      overflow: hidden;
+    }
+
+    @media (max-width: 600px) {
+      .parking-modal {
+        padding: 12px;
+      }
+
+      .parking-modal__window {
+        max-width: 96vw;
+        padding: 6px;
+      }
+
+      .parking-modal__close {
+        top: -13px;
+        right: -8px;
+        width: 38px;
+        height: 38px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -2923,6 +3007,7 @@
               <li><span class="mark">3</span><span>K dispozici bude pivo, víno, prosecco i nealko, z jídla pak řízky, nejspíš i guláš, zelenina, ovoce, zmrzlina pro děti a jako bonus řemeslná pizza.</span></li>
               <li><span class="mark">4</span><span>Pokud by někdo chtěl přespat, k dispozici bude 8 míst na spaní a samozřejmě bude možné postavit stan kdekoliv v areálu.</span></li>
               <li><span class="mark">5</span><span>V případě nepříznivého počasí je možnost zůstat uvnitř v klubové hospodě, která má kapacitu cca 40 osob.</span></li>
+              <li><span class="mark">6</span><span>Info k parkování na odkazu <a class="parking-link" href="images/Parking_oslava.png" id="parking-link">zde</a>.</span></li>
             </ul>
           </section>
 
@@ -2949,6 +3034,12 @@
       </div>
     </main>
   </div>
+  <div class="parking-modal" id="parking-modal" role="dialog" aria-modal="true" aria-label="Informace k parkování" hidden>
+    <div class="parking-modal__window">
+      <button class="parking-modal__close" id="parking-modal-close" type="button" aria-label="Zavřít mapu parkování" title="Zavřít">&times;</button>
+      <img class="parking-modal__image" src="images/Parking_oslava.png" alt="Mapa s vyznačeným parkováním u Českého veslařského klubu Brno">
+    </div>
+  </div>
   <script src="photos/photos.js"></script>
   <script src="questions/config.js"></script>
   <script>
@@ -2959,12 +3050,50 @@
       var questionName = document.getElementById("question-name");
       var questionText = document.getElementById("question-text");
       var questionNote = document.getElementById("question-note");
+      var parkingLink = document.getElementById("parking-link");
+      var parkingModal = document.getElementById("parking-modal");
+      var parkingModalClose = document.getElementById("parking-modal-close");
       var questionStorageKey = "mara-ivos-questions";
       var questionEndpoint = window.partyQuestionsEndpoint || "";
       var config = window.partyPhotoGallery || {};
       var photos = Array.isArray(config.photos) ? config.photos.slice() : [];
       var heroPhotos = Array.isArray(config.heroPhotos) ? config.heroPhotos.slice() : [];
       var basePath = typeof config.basePath === "string" ? config.basePath : "photos/";
+
+      function closeParkingModal() {
+        if (!parkingModal) {
+          return;
+        }
+
+        parkingModal.hidden = true;
+        document.body.classList.remove("modal-open");
+        if (parkingLink) {
+          parkingLink.focus();
+        }
+      }
+
+      if (parkingLink && parkingModal && parkingModalClose) {
+        parkingLink.addEventListener("click", function (event) {
+          event.preventDefault();
+          parkingModal.hidden = false;
+          document.body.classList.add("modal-open");
+          parkingModalClose.focus();
+        });
+
+        parkingModalClose.addEventListener("click", closeParkingModal);
+
+        parkingModal.addEventListener("click", function (event) {
+          if (event.target === parkingModal) {
+            closeParkingModal();
+          }
+        });
+
+        document.addEventListener("keydown", function (event) {
+          if (event.key === "Escape" && !parkingModal.hidden) {
+            closeParkingModal();
+          }
+        });
+      }
 
       function normalizePhoto(photo) {
         if (typeof photo === "string") {
