@@ -2912,18 +2912,8 @@
       box-shadow: 12px 12px 0 rgba(0, 0, 0, 0.3);
     }
 
-    .weather-modal__eyebrow {
-      display: block;
-      margin-bottom: 6px;
-      color: var(--muted);
-      font-size: 0.78rem;
-      font-weight: 900;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-    }
-
     .weather-modal__window h2 {
-      margin: 0 46px 14px 0;
+      margin: 0 46px 16px 0;
       font-family: "Anton", Impact, sans-serif;
       font-size: clamp(2.8rem, 10vw, 5rem);
       font-weight: 400;
@@ -3146,10 +3136,11 @@
   <div class="weather-modal" id="weather-modal" role="dialog" aria-modal="true" aria-label="Aktuální předpověď počasí" hidden>
     <div class="weather-modal__window">
       <button class="weather-modal__close" id="weather-modal-close" type="button" aria-label="Zavřít počasí" title="Zavřít">&times;</button>
-      <span class="weather-modal__eyebrow">Předpověď podle yr.no</span>
       <h2>Počasí</h2>
       <p class="weather-modal__message">Bude trochu tepleji, vemte si plavky.</p>
       <dl class="weather-modal__forecast" id="weather-forecast" aria-live="polite">
+        <dt>Termín</dt>
+        <dd>Sobota 27. 6. od 15:00</dd>
         <dt>Teplota</dt>
         <dd id="weather-temp">Načítám...</dd>
         <dt>Obloha</dt>
@@ -3186,6 +3177,7 @@
       var weatherRain = document.getElementById("weather-rain");
       var weatherWind = document.getElementById("weather-wind");
       var weatherEndpoint = "https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=49.2302&lon=16.5168";
+      var weatherForecastTarget = new Date("2026-06-27T15:00:00+02:00").getTime();
       var questionStorageKey = "mara-ivos-questions";
       var questionEndpoint = window.partyQuestionsEndpoint || "";
       var config = window.partyPhotoGallery || {};
@@ -3260,6 +3252,26 @@
         return labels[normalized] || "Aktuální předpověď";
       }
 
+      function findForecastPoint(timeseries) {
+        if (!Array.isArray(timeseries) || timeseries.length === 0) {
+          return null;
+        }
+
+        return timeseries.reduce(function (best, point) {
+          var time = Date.parse(point.time);
+          var distance = Number.isNaN(time) ? Number.POSITIVE_INFINITY : Math.abs(time - weatherForecastTarget);
+
+          if (!best || distance < best.distance) {
+            return {
+              distance: distance,
+              point: point
+            };
+          }
+
+          return best;
+        }, null).point;
+      }
+
       function loadWeather() {
         if (!window.fetch) {
           setWeatherFallback();
@@ -3272,7 +3284,8 @@
           }
           return response.json();
         }).then(function (data) {
-          var point = data && data.properties && data.properties.timeseries && data.properties.timeseries[0];
+          var timeseries = data && data.properties && data.properties.timeseries;
+          var point = findForecastPoint(timeseries);
           var instant = point && point.data && point.data.instant && point.data.instant.details;
           var nextHour = point && point.data && point.data.next_1_hours;
           var nextSixHours = point && point.data && point.data.next_6_hours;
