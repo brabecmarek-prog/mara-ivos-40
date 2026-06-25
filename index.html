@@ -2874,7 +2874,8 @@
       color: var(--red);
     }
 
-    .parking-modal {
+    .parking-modal,
+    .weather-modal {
       position: fixed;
       inset: 0;
       z-index: 1000;
@@ -2884,7 +2885,8 @@
       background: rgba(20, 20, 28, 0.82);
     }
 
-    .parking-modal[hidden] {
+    .parking-modal[hidden],
+    .weather-modal[hidden] {
       display: none;
     }
 
@@ -2898,6 +2900,99 @@
       box-shadow: 12px 12px 0 rgba(0, 0, 0, 0.3);
     }
 
+    .weather-modal__window {
+      position: relative;
+      width: min(560px, 94vw);
+      padding: clamp(22px, 4vw, 34px);
+      border: 3px solid var(--line);
+      background:
+        radial-gradient(circle at 86% 18%, rgba(242, 200, 66, 0.22) 0 58px, transparent 60px),
+        linear-gradient(135deg, rgba(218, 240, 230, 0.76), rgba(255, 250, 240, 0.96) 48%, rgba(255, 232, 226, 0.78));
+      color: var(--line);
+      box-shadow: 12px 12px 0 rgba(0, 0, 0, 0.3);
+    }
+
+    .weather-modal__eyebrow {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .weather-modal__window h2 {
+      margin: 0 46px 14px 0;
+      font-family: "Anton", Impact, sans-serif;
+      font-size: clamp(2.8rem, 10vw, 5rem);
+      font-weight: 400;
+      line-height: 0.92;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+
+    .weather-modal__message {
+      margin: 0 0 20px;
+      max-width: 34rem;
+      color: var(--muted);
+      font-size: clamp(1.1rem, 3vw, 1.35rem);
+      font-weight: 900;
+    }
+
+    .weather-modal__forecast {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 8px 18px;
+      margin: 0 0 22px;
+      padding: 16px;
+      border: 2px solid var(--line);
+      background: rgba(255, 250, 240, 0.72);
+      box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.16);
+    }
+
+    .weather-modal__forecast dt {
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .weather-modal__forecast dd {
+      margin: 0;
+      color: var(--line);
+      font-weight: 900;
+    }
+
+    .weather-modal__actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .weather-modal__actions .button {
+      min-height: 42px;
+      border: 2px solid var(--line);
+      border-radius: 0;
+      background: var(--yellow);
+      color: var(--line);
+      box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.22);
+    }
+
+    .weather-modal__source {
+      color: var(--muted);
+      font-size: 0.9rem;
+      font-weight: 800;
+    }
+
+    .weather-modal__source a {
+      color: var(--line);
+      text-decoration-thickness: 2px;
+      text-underline-offset: 3px;
+    }
+
     .parking-modal__image {
       display: block;
       max-width: 100%;
@@ -2905,7 +3000,8 @@
       object-fit: contain;
     }
 
-    .parking-modal__close {
+    .parking-modal__close,
+    .weather-modal__close {
       position: absolute;
       top: -17px;
       right: -17px;
@@ -2929,7 +3025,8 @@
     }
 
     @media (max-width: 600px) {
-      .parking-modal {
+      .parking-modal,
+      .weather-modal {
         padding: 12px;
       }
 
@@ -2938,11 +3035,17 @@
         padding: 6px;
       }
 
-      .parking-modal__close {
+      .parking-modal__close,
+      .weather-modal__close {
         top: -13px;
         right: -8px;
         width: 38px;
         height: 38px;
+      }
+
+      .weather-modal__forecast {
+        grid-template-columns: 1fr;
+        gap: 2px;
       }
     }
   </style>
@@ -3040,6 +3143,28 @@
       <img class="parking-modal__image" src="images/Parking_oslava.png" alt="Mapa s vyznačeným parkováním u Českého veslařského klubu Brno">
     </div>
   </div>
+  <div class="weather-modal" id="weather-modal" role="dialog" aria-modal="true" aria-label="Aktuální předpověď počasí" hidden>
+    <div class="weather-modal__window">
+      <button class="weather-modal__close" id="weather-modal-close" type="button" aria-label="Zavřít počasí" title="Zavřít">&times;</button>
+      <span class="weather-modal__eyebrow">Předpověď podle yr.no</span>
+      <h2>Počasí</h2>
+      <p class="weather-modal__message">Bude trochu tepleji, vemte si plavky.</p>
+      <dl class="weather-modal__forecast" id="weather-forecast" aria-live="polite">
+        <dt>Teplota</dt>
+        <dd id="weather-temp">Načítám...</dd>
+        <dt>Obloha</dt>
+        <dd id="weather-summary">Načítám předpověď.</dd>
+        <dt>Srážky</dt>
+        <dd id="weather-rain">-</dd>
+        <dt>Vítr</dt>
+        <dd id="weather-wind">-</dd>
+      </dl>
+      <div class="weather-modal__actions">
+        <button class="button" id="weather-modal-ok" type="button">Jasně</button>
+        <span class="weather-modal__source">Zdroj: <a href="https://www.yr.no/en/forecast/daily-table/2-3078610/Czechia/South%20Moravian/Brno/Brno" target="_blank" rel="noreferrer">yr.no</a></span>
+      </div>
+    </div>
+  </div>
   <script src="photos/photos.js"></script>
   <script src="questions/config.js"></script>
   <script>
@@ -3053,6 +3178,14 @@
       var parkingLink = document.getElementById("parking-link");
       var parkingModal = document.getElementById("parking-modal");
       var parkingModalClose = document.getElementById("parking-modal-close");
+      var weatherModal = document.getElementById("weather-modal");
+      var weatherModalClose = document.getElementById("weather-modal-close");
+      var weatherModalOk = document.getElementById("weather-modal-ok");
+      var weatherTemp = document.getElementById("weather-temp");
+      var weatherSummary = document.getElementById("weather-summary");
+      var weatherRain = document.getElementById("weather-rain");
+      var weatherWind = document.getElementById("weather-wind");
+      var weatherEndpoint = "https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=49.2302&lon=16.5168";
       var questionStorageKey = "mara-ivos-questions";
       var questionEndpoint = window.partyQuestionsEndpoint || "";
       var config = window.partyPhotoGallery || {};
@@ -3070,6 +3203,116 @@
         if (parkingLink) {
           parkingLink.focus();
         }
+      }
+
+      function closeWeatherModal() {
+        if (!weatherModal) {
+          return;
+        }
+
+        weatherModal.hidden = true;
+        document.body.classList.remove("modal-open");
+      }
+
+      function openWeatherModal() {
+        if (!weatherModal) {
+          return;
+        }
+
+        weatherModal.hidden = false;
+        document.body.classList.add("modal-open");
+        if (weatherModalClose) {
+          weatherModalClose.focus();
+        }
+      }
+
+      function setWeatherFallback() {
+        if (weatherTemp) {
+          weatherTemp.textContent = "Podívejte se na yr.no";
+        }
+        if (weatherSummary) {
+          weatherSummary.textContent = "Předpověď se teď nepodařilo načíst.";
+        }
+        if (weatherRain) {
+          weatherRain.textContent = "-";
+        }
+        if (weatherWind) {
+          weatherWind.textContent = "-";
+        }
+      }
+
+      function getWeatherLabel(symbolCode) {
+        var labels = {
+          clearsky: "Jasno",
+          fair: "Skoro jasno",
+          partlycloudy: "Polojasno",
+          cloudy: "Oblačno",
+          rainshowers: "Přeháňky",
+          rain: "Déšť",
+          heavyrain: "Silný déšť",
+          lightrain: "Slabý déšť",
+          sleet: "Déšť se sněhem",
+          snow: "Sníh",
+          fog: "Mlha"
+        };
+        var normalized = String(symbolCode || "").replace(/_(day|night|polartwilight)$/i, "");
+
+        return labels[normalized] || "Aktuální předpověď";
+      }
+
+      function loadWeather() {
+        if (!window.fetch) {
+          setWeatherFallback();
+          return;
+        }
+
+        fetch(weatherEndpoint).then(function (response) {
+          if (!response.ok) {
+            throw new Error("Weather request failed");
+          }
+          return response.json();
+        }).then(function (data) {
+          var point = data && data.properties && data.properties.timeseries && data.properties.timeseries[0];
+          var instant = point && point.data && point.data.instant && point.data.instant.details;
+          var nextHour = point && point.data && point.data.next_1_hours;
+          var nextSixHours = point && point.data && point.data.next_6_hours;
+          var forecast = nextHour || nextSixHours || {};
+          var details = forecast.details || {};
+          var summary = forecast.summary || {};
+
+          if (!instant) {
+            throw new Error("Weather data missing");
+          }
+
+          if (weatherTemp) {
+            weatherTemp.textContent = Math.round(instant.air_temperature) + " °C";
+          }
+          if (weatherSummary) {
+            weatherSummary.textContent = getWeatherLabel(summary.symbol_code);
+          }
+          if (weatherRain) {
+            weatherRain.textContent = typeof details.precipitation_amount === "number" ? details.precipitation_amount + " mm" : "0 mm";
+          }
+          if (weatherWind) {
+            weatherWind.textContent = Math.round(instant.wind_speed || 0) + " m/s";
+          }
+        }).catch(setWeatherFallback);
+      }
+
+      if (weatherModal && weatherModalClose && weatherModalOk) {
+        window.setTimeout(function () {
+          openWeatherModal();
+          loadWeather();
+        }, 650);
+
+        weatherModalClose.addEventListener("click", closeWeatherModal);
+        weatherModalOk.addEventListener("click", closeWeatherModal);
+
+        weatherModal.addEventListener("click", function (event) {
+          if (event.target === weatherModal) {
+            closeWeatherModal();
+          }
+        });
       }
 
       if (parkingLink && parkingModal && parkingModalClose) {
@@ -3091,6 +3334,9 @@
         document.addEventListener("keydown", function (event) {
           if (event.key === "Escape" && !parkingModal.hidden) {
             closeParkingModal();
+          }
+          if (event.key === "Escape" && weatherModal && !weatherModal.hidden) {
+            closeWeatherModal();
           }
         });
       }
